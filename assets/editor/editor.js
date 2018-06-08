@@ -19,8 +19,8 @@ cc.Class({
             this._arrLines.push([]);
         }
         this.c_bread.active = false;
-        this.c_time.node.active = false;
         this._start = false;
+        this.c_time.string = "";
     },
 
     // self
@@ -35,9 +35,9 @@ cc.Class({
         this._start = true;
         this._time = dropTime;
         this._step = 0;
+        this._showTime = 0;
         while(json.frames[this._step][0] <= dropTime + dropTime) {
             ++ this._step;
-            cc.log('1111');
         }
         cc.audioEngine.stopAll();
         cc.audioEngine.play(this.c_musicurl, false, 1);
@@ -89,10 +89,13 @@ cc.Class({
     // node
     update(dt) {
         this.move(dt);
-        if (!this._start) {
+        if (!this._start) {  
+            this.c_time.string = "";
             return;
         }
         this._time += parseInt(1000 * dt);
+        this._showTime += dt;
+        this.c_time.string = '' + parseInt(1000 * this._showTime);
         if (this._time >= this._json.time) {
             this._start = false;
             this.reset(this._json);
