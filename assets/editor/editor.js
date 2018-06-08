@@ -21,6 +21,7 @@ cc.Class({
         this.c_bread.active = false;
         this._start = false;
         this.c_time.string = "";
+        this._musicID = 0;
     },
 
     // self
@@ -31,21 +32,26 @@ cc.Class({
             return;
         }
         var dropTime = parseInt(this.node.height * 1000 / default_speed);
+        var firstTime = json.frames[0][0];
         this._json = json;
         this._start = true;
-        this._time = dropTime;
+        this._time = 0;
         this._step = 0;
-        this._showTime = 0;
-        while(json.frames[this._step][0] <= dropTime + dropTime) {
-            ++ this._step;
+        this._musicTime = dropTime;
+        if (this._musicID > 0) {
+            cc.audioEngine.stop(this._musicID); // win下不能停止
+            cc.audioEngine.stopAll(); 
+            this._musicID = 0;
         }
-        cc.audioEngine.stopAll();
-        cc.audioEngine.play(this.c_musicurl, false, 1);
     },
 
     // node
     start() {
-        this.reset(require('music'));
+        var json = require('music');
+        var editor = this;
+        cc.audioEngine.preload(this.c_musicurl, function() {
+            editor.reset(json);
+        });
     },
 
     // self
@@ -94,8 +100,11 @@ cc.Class({
             return;
         }
         this._time += parseInt(1000 * dt);
-        this._showTime += dt;
-        this.c_time.string = '' + parseInt(1000 * this._showTime);
+        this._musicTime += dt;
+        this.c_time.string = '' + this._time;
+        if (this._time >= this._musicTime && this._musicID <= 0) {
+            this._musicID = cc.audioEngine.play(this.c_musicurl, false, 1);
+        }
         if (this._time >= this._json.time) {
             this._start = false;
             this.reset(this._json);
